@@ -1,0 +1,18 @@
+<html>
+    <body>
+        <script>
+            const sse = new EventSource("http://127.0.0.1:8081");
+
+            sse.addEventListener("message", (event) => {
+                console.log(JSON.parse(event.data));
+            });
+
+            sse.addEventListener("ping", (event) => {
+                console.debug(JSON.parse(event.data));
+            });
+
+            const closeStream = () => sse.close();
+        </script>
+        <button onclick="closeStream();">closeStream</button>
+    </body>
+</html>
