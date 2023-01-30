@@ -5,9 +5,10 @@ const { v4 } = require("uuid");
 
 const host = process.env.LISTEN_HOST || "127.0.0.1";
 const port = process.env.LISTEN_PORT || 8081;
+const redisURL = process.env.REDIS_URL || "127.0.0.1:6379";
+
 const pingIntervalSeconds = 5;
 const streams = new Set();
-const redisURL = process.env.REDIS_URL || "127.0.0.1:6379";
 
 function sendSSE(data, event = "message") {
     if (streams.size > 0) {
