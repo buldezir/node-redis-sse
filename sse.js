@@ -5,7 +5,8 @@ const { v4 } = require("uuid");
 
 const host = process.env.LISTEN_HOST || "127.0.0.1";
 const port = process.env.LISTEN_PORT || 8081;
-const redisURL = process.env.REDIS_URL || "127.0.0.1:6379";
+const redisURL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+const channelPrefix = process.env.CHANNEL_PREFIX || "sse/";
 
 const pingIntervalSeconds = 5;
 const streams = new Set();
@@ -57,17 +58,24 @@ server.listen(port, host, () => {
     console.log(`server running at http://${host}:${port}`);
 
     redis.on("pmessage", (pattern, channel, message) => {
-        const data = JSON.parse(message);
-        data.time = Date.now();
-        sendSSE(data, channel);
+        let data = {};
+        try {
+            data = JSON.parse(message);
+        } catch (e) {
+            console.debug(channel, message);
+            console.error(e.message);
+            data = {error: e};
+        }
+        data.ts = Date.now();
+        sendSSE(data, channel.replace(channelPrefix, ""));
     });
-    redis.psubscribe("*", (err, count) => {
+    redis.psubscribe(`${channelPrefix}*`, (err, count) => {
         if (err) console.error(err);
     });
 
     // ping
     setInterval(() => {
-        sendSSE({ time: Date.now() }, "ping");
+        sendSSE({ ts: Date.now() }, "ping");
     }, pingIntervalSeconds * 1000);
 });
 
