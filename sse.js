@@ -1,7 +1,7 @@
 const http = require("http");
 const { Redis } = require("ioredis");
 const { Readable } = require("stream");
-const { v4 } = require("uuid");
+const crypto = require("crypto");
 
 const host = process.env.LISTEN_HOST || "127.0.0.1";
 const port = process.env.LISTEN_PORT || 8081;
@@ -13,10 +13,10 @@ const streams = new Set();
 
 function sendSSE(data, event = "message") {
     if (streams.size > 0) {
-        const uuid = v4();
+        const id = crypto.randomUUID();
         const json = JSON.stringify(data);
         streams.forEach((istream) => {
-            istream.push(`id: ${uuid}\n`);
+            istream.push(`id: ${id}\n`);
             istream.push(`event: ${event}\n`);
             istream.push(`data: ${json}\n\n`);
         });
